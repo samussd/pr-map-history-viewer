@@ -15,6 +15,19 @@ body {
   gap: 10px;
 }
 
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.header img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+}
+
 #days {
   font-size: 16px;
 }
@@ -31,18 +44,35 @@ body {
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3); /* Subtle shadow */
 }
 
-#filter-btn {
-  margin: 12px 0;
+select {
+  height: fit-content; /* Adjust to match button height */
+  padding: 4px 6px; /* Adjust to match button padding */
+  font-size: 14px; /* Adjust to match button font size */
+  border: 1px solid #ccc; /* Adjust border to match button style */
+  border-radius: 4px; /* Adjust border radius to match button style */
+  background-color: white; /* Adjust background color to match button style */
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+input {
+  height: fit-content; /* Adjust to match button height */
+  padding: 4px 6px; /* Adjust to match button padding */
+  font-size: 14px; /* Adjust to match button font size */
+  border: 1px solid #ccc; /* Adjust border to match button style */
+  border-radius: 4px; /* Adjust border radius to match button style */
+  background-color: white; /* Adjust background color to match button style */
+  cursor: pointer;
+  box-sizing: border-box;
 }
 
 #selected-gamemodes {
-  height: 40px;
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
   justify-content: start;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 #maps {
@@ -60,6 +90,7 @@ body {
   align-items: start;
   padding: 20px 60px;
   background-color: var(--bgdark);
+  gap: 10px;
 }
 
 .map-card {
@@ -82,6 +113,7 @@ body {
   width: 100%;
   height: 100%; /* Ensure the image covers the entire card */
   object-fit: cover;
+  -webkit-user-drag: none;
 }
 
 .title-overlay {
@@ -90,16 +122,21 @@ body {
   left: 0;
   right: 0;
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0)); /* Gradient from semi-transparent black to transparent */
-  color: beige;
+  color: rgb(245, 245, 219);
   padding: 8px 8px 12px;
   text-align: center;
-  font-size: 24px;
 }
 
-.title-overlay p {
-  font-size: 20px;
+.title-overlay p:first-child {
+  font-size: 24px;
   font-weight: bold;
   margin: 2px 0;
+}
+
+.title-overlay p:last-child {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(245, 245, 219, 0.8);
 }
 
 .text-overlay {
@@ -133,7 +170,6 @@ body {
 .gamemode-tag {
   display: inline-block;
   padding: 5px 10px;
-  margin: 5px;
   background-color: #007bff;
   color: white;
   border-radius: 20px;
@@ -160,3 +196,29 @@ body {
   color: white;
   border-radius: 5px;
 }
+
+.map-card .map-button {
+  position: absolute;
+  top: 25%;
+  right: 10px;
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  z-index: 1;
+}
+
+.map-card .map-button:hover {
+  background-color: #0056b3;
+}
+
+.bottom {
+  display: flex;
+  justify-content: center;
+  color: #ccccccbe;
+  font-size: 12px;
+}
+
+.bottom a:visited { text-decoration: none; color: #ccccccbe;}

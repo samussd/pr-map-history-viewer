@@ -61,6 +61,7 @@ export const canon_name = {
     "Reichswald": "reichswald",
     "Road to Damascus": "road_to_damascus",
     "Route": "route",
+    "Route E-106": "route",
     "Rzhev": "rzhev",
     "Saaremaa": "saaremaa",
     "Sahel": "sahel",
@@ -87,7 +88,9 @@ export const canon_name = {
     "Lashkar Valley": "lashkar_valley",
     "Shipment": "shipment",
     "Deagle5": "deagle5",
-    
+    "Medelivka": "medelivka",
+    "Medelivka Seasonal": "medelivka"
+
 }
 
 export const canon_layout = {

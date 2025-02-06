@@ -8,7 +8,10 @@
 </head>
 <body>
     <div class="container">
-        <h2 id="title">Map Logs</h2>
+        <div class="header">
+            <img src="images/icons/rb_logo.png" alt="Logo Reality Brasil">
+            <h2 id="title">Histórico de Mapas</h2>
+        </div>
 
         <form id="filters-form">
             <div class="form-group">
@@ -34,12 +37,24 @@
                 <input type="number" id="days" min="0" max="31" value="3"> dias
             </div>
 
-            <button type="submit" class="specialbtn" id="filter-btn">Filtrar</button>
+            <select id="order-picker">
+                <option value="alphabetical-asc">Ordem A-Z</option>
+                <option value="alphabetical-desc">Ordem de Z-A</option>
+                <option value="date-asc">Mais antigos primeiro</option>
+                <option value="date-desc">Mais recentes primeiro</option>
+            </select>
+
+            <button type="submit" class="specialbtn" id="filter-btn">Exibir</button>
         </form>
+
+        
 
         <div id="maps"></div>
     </div>
+    <div class="bottom">
+        <p>Feito por <a href="https://github.com/samussd">samussd</a> (Discord: samwka)</p>
+    </div>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
