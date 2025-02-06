@@ -10,4 +10,4 @@ Para instalar todos os requisitos
 src/services/gameMonitor.js - Vê o mapa atual rodando no servidor, e em caso de mudança de mapa, salva o último na base de dados de mapas rodados
 
 ## Frontend
-src/components/MapLogs.js - Lê todos os mapas da base de dados e retorna um elemento de HTML para display
+script.js - Usa a API criada no backend para ver todos os mapas da base de dados e retorna um elemento de HTML para display

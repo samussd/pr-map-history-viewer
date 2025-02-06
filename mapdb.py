@@ -1,19 +1,5 @@
 import sqlite3
 
-# Connect (or create) the database file
-conn = sqlite3.connect('prmaps.sqlite')
-cursor = conn.cursor()
-
-# Create the table
-cursor.execute('''
-    CREATE TABLE IF NOT EXISTS maps (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        map_name TEXT,
-        game_mode TEXT,
-        size TEXT
-    )
-''')
-
 # Your data list
 MAPLISTALL = [
  ('adak', 'gpm_cq', 'Alt'), 
@@ -662,15 +648,22 @@ MAPLISTALL = [
  ('zakho', 'gpm_coop', 'Std'), 
  ('zakho', 'gpm_coop', 'Lrg')]
 
+# Connect to the maplogdb.sqlite database
+conn_log = sqlite3.connect('backend/maplogdb.sqlite')
+cursor_log = conn_log.cursor()
 
-# Insert the data using executemany for efficiency
-cursor.executemany('''
-    INSERT INTO maps (map_name, game_mode, size)
-    VALUES (?, ?, ?)
-''', MAPLISTALL)
+# Insert data into the MapLogs table with null mapDate
+for map_name, game_mode, game_layout in MAPLISTALL:
+    cursor_log.execute('''
+        INSERT INTO MapLogs (map_name, game_type, layout, most_recent_date)
+        VALUES (?, ?, ?, ?);
+    ''', (map_name, game_mode, game_layout, None))  # Set mapDate to None (null in SQLite)
 
-# Commit and close the connection
-conn.commit()
-conn.close()
+# Commit the changes
+conn_log.commit()
 
-print("Database created successfully!")
+# Close the connection
+conn_log.close()
+
+print("Data inserted successfully.")
+

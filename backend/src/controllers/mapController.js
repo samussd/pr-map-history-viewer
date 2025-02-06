@@ -6,12 +6,6 @@ import { open } from 'sqlite';
 import { canon_name, canon_layout } from '../../config/mapConstants.js';
 
 
-// Open connection to `mapsdb.sqlite`
-const mapsDb = await open({
-    filename: './mapsdb.sqlite',
-    driver: sqlite3.Database
-});
-
 // ✅ Function to save a new map log (for gameMonitor.js)
 export const saveMapLog = async (gameType, gameLayout, mapName, mapDate) => {
     try {
@@ -60,47 +54,87 @@ export const removeMapLog = async (req, res) => {
   }
 };
 
+export const updateMapLogDate = async (mapName, gameMode, gameLayout, mapDate) => {
+    try {
+        // Find the map log entry based on mapName, gameMode, and gameLayout
+        const existingMapLog = await MapLog.findOne({
+            where: {
+                map_name: mapName,  // Match the column name in the model
+                game_type: gameMode,  // Match the column name in the model
+                layout: gameLayout  // Match the column name in the model
+            }
+        });
+
+        if (!existingMapLog) {
+            console.error('❌ Map log entry not found');
+            return null;
+        }
+
+        // Update the most_recent_date column
+        existingMapLog.most_recent_date = mapDate;
+
+        // Save the updated map log
+        await existingMapLog.save();
+        console.log(`📝 Map log date updated: ${mapName} - ${gameMode} - ${gameLayout} at ${mapDate}`);
+
+        return existingMapLog;
+    } catch (error) {
+        console.error('❌ Error updating map log date:', error);
+    }
+};
+
 // Function to fetch filtered maps
 export const getFilteredMaps = async (req, res) => {
     try {
         const { gameModes, days } = req.query;
-        const gameModeArray = gameModes ? gameModes.split(',') : [];
-        const daysInt = parseInt(days, 10) || 7;
-
-        const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - daysInt);
-
-        const recentMapLogs = await MapLog.findAll({
-            attributes: ['mapName', 'gameType'],
-            where: {
-                gameType: gameModeArray,
-                mapDate: { [Sequelize.Op.gte]: cutoffDate }
-            }
-        });
-
-        const excludedPairs = recentMapLogs.map(log => ({
-            mapName: canon_name[log.mapName] ? canon_name[log.mapName].formatted : log.mapName,
-            gameMode: log.gameType
-        }));
-
-        let query = `SELECT * FROM Maps`;
-        if (excludedPairs.length > 0) {
-            query += ` WHERE `;
-            const conditions = excludedPairs.map(pair => {
-                return `NOT (LOWER(Maps.map_name) = ? AND Maps.game_mode = ?)`;
-            });
-            query += conditions.join(' AND ');
+        
+        // If gameModes or days are not provided, return a bad request response
+        if (!gameModes || !days) {
+            return res.status(400).json({ message: "Please provide both 'gameModes' and 'days' parameters" });
         }
 
-        const params = excludedPairs.flatMap(pair => [pair.mapName, pair.gameMode]);
-        const maps = await mapsDb.all(query, params);
+        // Parse the gameModes and days from the query params
+        const gameModesArray = gameModes.split(',');  // Assuming gameModes is a comma-separated list
+        const daysInt = parseInt(days, 10);
 
-        return res.json(maps);
+        // Get the date for filtering based on the days parameter
+        const dateLimit = new Date();
+        dateLimit.setDate(dateLimit.getDate() - daysInt);
+
+        // Fetch map names that have game types ran in the last 'x' days
+        const mapsToExclude = await MapLog.findAll({
+            attributes: ['map_name'],  // Only return the map_name column to focus on excluded maps
+            where: {
+                game_type: {
+                    [Sequelize.Op.in]: gameModesArray,  // Include maps with any of the specified game modes
+                },
+                most_recent_date: {
+                    [Sequelize.Op.gte]: dateLimit,  // Exclude only maps that have run in the last 'x' days
+                },
+            },
+            group: ['map_name'],  // Group by map_name to avoid duplicates
+            raw: true,  // Return as plain object
+        });
+
+        const excludedMapNames = mapsToExclude.map(map => map.map_name);
+
+        // Fetch all map names that are not in the exclusion list
+        const filteredMaps = await MapLog.findAll({
+            attributes: ['map_name','game_type','layout','most_recent_date'],  // Return the map_name column
+            where: {
+                map_name: {
+                    [Sequelize.Op.notIn]: excludedMapNames,  // Exclude maps that are in the exclusion list
+                },
+            },
+            raw: true,  // Return as plain object
+        });
+
+        // Return the filtered map names
+        res.status(200).json({ filteredMaps });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ error: 'Erro ao buscar mapas filtrados' });
+        res.status(500).json({ message: "An error occurred while fetching the filtered maps" });
     }
 };
-
 
 

@@ -1,5 +1,6 @@
 import { GameDig } from 'gamedig';
-import { saveMapLog } from '../controllers/mapController.js';
+import { saveMapLog, updateMapLogDate } from '../controllers/mapController.js';
+import { canon_name, canon_layout } from '../../config/mapConstants.js';
 
 let lastMap = null
 
@@ -36,10 +37,10 @@ export async function updateServerInfo() {
             
             console.log(`CHANGED TO [${currentMap.gameType}, ${currentMap.gameLayout}, ${currentMap.mapName}] at ${changeTime}`);
             
-            await saveMapLog(
+            await updateMapLogDate(
+                canon_name[lastMap.mapName] || lastMap.mapName,
                 lastMap.gameType,
-                lastMap.gameLayout,
-                lastMap.mapName,
+                canon_layout[lastMap.gameLayout] || lastMap.gameLayout,
                 changeTime
             );
 

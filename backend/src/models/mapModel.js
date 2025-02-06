@@ -4,26 +4,29 @@ import { Sequelize, DataTypes } from 'sequelize';
 // Initialize SQLite database
 const sequelize = new Sequelize({
     dialect: 'sqlite',
-    storage: 'maplogdb.sqlite'  // SQLite file
+    storage: 'maplogdb.sqlite',  // SQLite file
+    define: {
+        timestamps: false
+      },
 });
 
 // Define the GameMap model
 const MapLog = sequelize.define('MapLogs', {
-    gameType: {
+    game_type: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    gameLayout: {
+    layout: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    mapName: {
+    map_name: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    mapDate: {
+    most_recent_date: {
         type: DataTypes.DATE,
-        allowNull: false
+        allowNull: true
     }
 });
 

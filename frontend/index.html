@@ -3,11 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
     <title>Map Logs</title>
 </head>
 <body>
-    <h2>Map Logs</h2>
-    <ul id="logs"></ul>
+    <div class="container">
+        <h2>Map Logs</h2>
+
+        <form id="filters-form">
+            <div class="form-group">
+                <label for="gamemode">Select Game Mode:</label>
+                <select id="gamemode">
+                    <option value="gpm_cq">AAS</option>
+                    <option value="gpm_insurgency">INS</option>
+                    <option value="gpm_skirmish">SKIRMISH</option>
+                    <option value="gpm_gungame">GUNGAME</option>
+                    <option value="gpm_cnc">CNC</option>
+                    <option value="gpm_vehicles">VEHICLE WARFARE</option>
+                    <option value="gpm_coop">COOP</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="days">Enter Days (integer):</label>
+                <input type="number" id="days" min="1" value="7">
+            </div>
+
+            <button type="submit">Filter</button>
+        </form>
+
+        <div id="maps"></div>
+    </div>
 
     <script src="script.js"></script>
 </body>
