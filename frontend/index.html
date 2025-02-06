@@ -8,28 +8,33 @@
 </head>
 <body>
     <div class="container">
-        <h2>Map Logs</h2>
+        <h2 id="title">Map Logs</h2>
 
         <form id="filters-form">
             <div class="form-group">
-                <label for="gamemode">Select Game Mode:</label>
+                <label for="gamemode">Exibir mapas que NÃO rodaram os modos:</label>
                 <select id="gamemode">
                     <option value="gpm_cq">AAS</option>
-                    <option value="gpm_insurgency">INS</option>
+                    <option value="gpm_insurgency">INSURGENCY</option>
                     <option value="gpm_skirmish">SKIRMISH</option>
                     <option value="gpm_gungame">GUNGAME</option>
                     <option value="gpm_cnc">CNC</option>
                     <option value="gpm_vehicles">VEHICLE WARFARE</option>
                     <option value="gpm_coop">COOP</option>
                 </select>
+                <button type="button" id="add-gamemode" class="specialbtn">Adicionar</button>
+            </div>
+
+            <div class="form-group" id="selected-gamemodes">
+                <!-- Selected gamemodes will appear here as tags -->
             </div>
 
             <div class="form-group">
-                <label for="days">Enter Days (integer):</label>
-                <input type="number" id="days" min="1" value="7">
+                <label for="days">Nos últimos</label>
+                <input type="number" id="days" min="0" max="31" value="3"> dias
             </div>
 
-            <button type="submit">Filter</button>
+            <button type="submit" class="specialbtn" id="filter-btn">Filtrar</button>
         </form>
 
         <div id="maps"></div>

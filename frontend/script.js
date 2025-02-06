@@ -1,9 +1,79 @@
-document.addEventListener("DOMContentLoaded", async () => {
-    const mapsContainer = document.getElementById("maps");
-    const filtersForm = document.getElementById("filters-form");
+document.addEventListener("DOMContentLoaded", () => {
     const gamemodeSelect = document.getElementById("gamemode");
+    const addGamemodeButton = document.getElementById("add-gamemode");
+    const selectedGamemodesContainer = document.getElementById("selected-gamemodes");
+    const filtersForm = document.getElementById("filters-form");
     const daysInput = document.getElementById("days");
 
+    const gamemode_name = {
+        'gpm_cq': 'AAS',
+        'gpm_insurgency': 'INSURGENCY',
+        'gpm_gungame': 'GUNGAME',
+        'gpm_cnc': 'CNC',
+        'gpm_skirmish': 'SKIRMISH',
+        'gpm_vehicles': 'VEHICLE WARFARE',
+        'gpm_coop': 'COOP'
+    }
+
+    const short_gamemode_name = {
+        'gpm_cq': 'AAS',
+        'gpm_insurgency': 'INS',
+        'gpm_gungame': 'GUNGAME',
+        'gpm_cnc': 'CNC',
+        'gpm_skirmish': 'SKIRM',
+        'gpm_vehicles': 'VW',
+        'gpm_coop': 'COOP'
+    }
+
+    let selectedGamemodes = [];
+
+    const updateSelectedGamemodes = () => {
+        selectedGamemodesContainer.innerHTML = ""; // Clear the current tags
+
+        selectedGamemodes.forEach((gamemode) => {
+            const tag = document.createElement("span");
+            tag.classList.add("gamemode-tag");
+
+            tag.textContent = gamemode_name[gamemode];
+
+            const removeButton = document.createElement("button");
+            removeButton.textContent = "X";
+            removeButton.classList.add("remove-tag");
+            removeButton.addEventListener("click", () => {
+                selectedGamemodes = selectedGamemodes.filter(item => item !== gamemode);
+                updateSelectedGamemodes();
+            });
+
+            tag.appendChild(removeButton);
+
+            selectedGamemodesContainer.appendChild(tag);
+        });
+    };
+
+    addGamemodeButton.addEventListener("click", () => {
+        const selectedOption = gamemodeSelect.value;
+
+        // Only add the gamemode if it's not already selected
+        if (!selectedGamemodes.includes(selectedOption)) {
+            selectedGamemodes.push(selectedOption);
+            updateSelectedGamemodes();
+        }
+    });
+
+    filtersForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const selectedDays = parseInt(daysInput.value, 10);
+
+        if (selectedGamemodes.length > 0) {
+            await fetchMaps(selectedGamemodes, selectedDays);
+        }
+        else {
+            await fetchMaps(['x'], selectedDays);
+        }
+    });
+
+    // Fetch maps function as before
     const fetchMaps = async (gamemodes, days) => {
         try {
             const maps_gamemodes = await getAvailableMapsAndGamemodes(gamemodes, days);
@@ -16,43 +86,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     const renderMaps = (maps_gamemodes) => {
+        const mapsContainer = document.getElementById("maps");
         mapsContainer.innerHTML = ""; // Clear previous content
 
         for (const mapName in maps_gamemodes) {
             if (maps_gamemodes.hasOwnProperty(mapName)) {
                 const mapData = maps_gamemodes[mapName];
-
-                // Get latest date overall
-                const latestDate = mapData
-                    .map(entry => new Date(entry.date))
-                    .filter(date => !isNaN(date))
-                    .sort((a, b) => b - a)[0]; // Get the most recent date
-
-                const formattedLatestDate = latestDate
-                    ? latestDate.toLocaleDateString()
-                    : "No recent data";
-
-                // Get latest date for "gpm_cq"
-                const cqDates = mapData
-                    .filter(entry => entry.layout === "gpm_cq")
-                    .map(entry => new Date(entry.date))
-                    .filter(date => !isNaN(date))
-                    .sort((a, b) => b - a)[0];
-
-                const formattedCQDate = cqDates
-                    ? cqDates.toLocaleDateString()
-                    : "Sem jogos recentes";
-
-                // Get latest date for "gpm_insurgency"
-                const insDates = mapData
-                    .filter(entry => entry.layout === "gpm_insurgency")
-                    .map(entry => new Date(entry.date))
-                    .filter(date => !isNaN(date))
-                    .sort((a, b) => b - a)[0];
-
-                const formattedInsDate = insDates
-                    ? insDates.toLocaleDateString()
-                    : "Sem jogos recentes";
 
                 // Create map container
                 const mapElement = document.createElement("div");
@@ -60,68 +99,120 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 // Create map image
                 const mapImage = document.createElement("img");
-                mapImage.src = `../images/maps/${mapName}.png`; // Assumes images are named after map names
+                mapImage.src = `/images/maps/${mapName}.png`; // Assumes images are named after map names
                 mapImage.alt = `${mapName} Image`;
 
-                // Create text for latest overall date
-                const latestDateInfo = document.createElement("p");
-                latestDateInfo.textContent = `Latest: ${formattedLatestDate}`;
+                // Create text overlay container
+                const textOverlay = document.createElement("div");
+                textOverlay.classList.add("text-overlay");
 
-                // Create text for latest gpm_cq date
-                const cqInfo = document.createElement("p");
-                cqInfo.textContent = `CQ: ${formattedCQDate}`;
+                // Create title overlay container
+                const titleOverlay = document.createElement("div");
+                titleOverlay.classList.add("title-overlay");
+                const mapNameElement = document.createElement("p");
+                mapNameElement.innerHTML = mapName.replace(/2$/, '').replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());;
+                titleOverlay.appendChild(mapNameElement);
 
-                // Create text for latest gpm_insurgency date
-                const insInfo = document.createElement("p");
-                insInfo.textContent = `INS: ${formattedInsDate}`;
+                // Initialize an empty string for the latest date information
+                let latestDateInfo = "Última vez que rodou os modos";
 
-                // Append elements
+                // Iterate over selected gamemodes and get the latest date for each
+                selectedGamemodes.forEach((gamemode) => {
+                    // Get the latest date for the selected gamemode
+                    const gamemodeData = mapData.filter(entry => entry.layout === gamemode);
+                    if (gamemodeData.length > 0) {
+                        const latestDate = gamemodeData
+                            .map(entry => entry.date ? new Date(entry.date) : null) // Convert to date or null if date is missing
+                            .filter(date => date !== null && !isNaN(date)) // Exclude null and invalid dates
+                            .sort((a, b) => b - a)[0];
+                
+                        // Display the latest date for the gamemode with hour and minute
+                        if (latestDate) {
+                            const formattedDate = latestDate.toLocaleDateString();
+                            const formattedTime = latestDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            latestDateInfo += `<br>${short_gamemode_name[gamemode]} -  ${formattedDate} às ${formattedTime}`;
+                        } else {
+                            latestDateInfo += `<br>${short_gamemode_name[gamemode]} -  Sem dados recentes`;
+                        }
+                    }
+                });
+
+                // Create text for latest dates for selected gamemodes
+                const latestDateElement = document.createElement("p");
+                latestDateElement.innerHTML = latestDateInfo;
+
+                // Append text element to the overlay
+                textOverlay.appendChild(latestDateElement);
+
+                // Append image and overlay to the map card
                 mapElement.appendChild(mapImage);
-                mapElement.appendChild(latestDateInfo);
-                mapElement.appendChild(cqInfo);
-                mapElement.appendChild(insInfo);
+                mapElement.appendChild(titleOverlay);
+                mapElement.appendChild(textOverlay);
+
+                mapElement.addEventListener("click", () => {
+                    // Toggle the visibility of the detailed information
+                    gamemodes = [];
+                    textOverlay.classList.toggle('detailed');
+                    if (textOverlay.classList.contains('detailed')) {
+                        gamemodes = Array.from(gamemodeSelect.options).map(option => option.value);
+                    }
+                    else {
+                        gamemodes = selectedGamemodes;
+                    }
+
+                    let latestDateInfo = "Última vez que rodou os modos";
+                    gamemodes.forEach((gamemode) => {
+                        const gamemodeData = mapData.filter(entry => entry.layout === gamemode);
+                        if (gamemodeData.length > 0) {
+                            const latestDate = gamemodeData
+                                .map(entry => entry.date ? new Date(entry.date) : null)
+                                .filter(date => date !== null && !isNaN(date))
+                                .sort((a, b) => b - a)[0];
+                    
+                            if (latestDate) {
+                                const formattedDate = latestDate.toLocaleDateString();
+                                const formattedTime = latestDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                latestDateInfo += `<br>${short_gamemode_name[gamemode]} -  ${formattedDate} às ${formattedTime}`;
+                            } else {
+                                latestDateInfo += `<br>${short_gamemode_name[gamemode]} -  Sem dados recentes`;
+                            }
+                        }
+                    });
+
+
+                    latestDateElement.innerHTML = latestDateInfo;
+                });
+
+                // Append map card to the container
                 mapsContainer.appendChild(mapElement);
             }
         }
     };
 
-    filtersForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
+    async function getAvailableMapsAndGamemodes(gamemodes, days) {
+        let maps_gamemodes = {}; // {'gaza_2': [{layout: gpm_cq, date:...}]}
 
-        const selectedGamemode = gamemodeSelect.value;
-        const selectedDays = parseInt(daysInput.value, 10);
+        try {
+            const response = await fetch(`http://localhost:5000/api/filtered-maps?gameModes=${gamemodes.join(",")}&days=${days}`);
+            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
-        await fetchMaps([selectedGamemode], selectedDays);
-    });
+            const data = await response.json();
 
-    // Fetch initial maps with default parameters
-    fetchMaps(["gpm_cq"], 7);
-});
-
-async function getAvailableMapsAndGamemodes(gamemodes, days) {
-    let maps_gamemodes = {}; // {'gaza_2': [{layout: gpm_cq, date:...}]}
-
-    try {
-        const response = await fetch(`http://localhost:5000/api/filtered-maps?gameModes=${gamemodes.join(",")}&days=${days}`);
-        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-
-        const data = await response.json();
-        console.log(data);
-
-        data.filteredMaps.forEach(log => {
-            if (!maps_gamemodes[log.map_name]) {
-                maps_gamemodes[log.map_name] = [];
-            }
-            maps_gamemodes[log.map_name].push({
-                layout: log.game_type,
-                date: log.most_recent_date
+            data.filteredMaps.forEach(log => {
+                if (!maps_gamemodes[log.map_name]) {
+                    maps_gamemodes[log.map_name] = [];
+                }
+                maps_gamemodes[log.map_name].push({
+                    layout: log.game_type,
+                    date: log.most_recent_date
+                });
             });
-        });
 
-    } catch (error) {
-        console.error("Error fetching logs:", error);
-        return {};
+        } catch (error) {
+            console.error("Error fetching logs:", error);
+            return {};
+        }
+
+        return maps_gamemodes;
     }
-
-    return maps_gamemodes;
-}
+});

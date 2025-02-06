@@ -57,6 +57,7 @@ export const canon_name = {
     "Pavlovsk Bay": "pavlovsk_bay",
     "Ramiel": "ramiel",
     "Ras el Masri": "ras_el_masri_2",
+    "Ras El Masri": "ras_el_masri_2",
     "Reichswald": "reichswald",
     "Road to Damascus": "road_to_damascus",
     "Route": "route",
@@ -80,9 +81,13 @@ export const canon_name = {
     "Yamalia": "yamalia",
     "Zakho": "zakho",
     "Albasrah": "albasrah_2",
+    "Al Basrah": "albasrah_2",
     "Karbala": "karbala",
     "Kokan": "kokan",
-    "Lashkar Valley": "lashkar_valley"
+    "Lashkar Valley": "lashkar_valley",
+    "Shipment": "shipment",
+    "Deagle5": "deagle5",
+    
 }
 
 export const canon_layout = {
