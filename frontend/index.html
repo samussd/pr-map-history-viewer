@@ -13,46 +13,79 @@
             <h2 id="title">Histórico de Mapas</h2>
         </div>
 
-        <form id="filters-form">
-            <div class="form-group">
-                <label for="gamemode">Exibir mapas que NÃO rodaram os modos:</label>
-                <select id="gamemode">
-                    <option value="gpm_cq">AAS</option>
-                    <option value="gpm_insurgency">INSURGENCY</option>
-                    <option value="gpm_skirmish">SKIRMISH</option>
-                    <option value="gpm_gungame">GUNGAME</option>
-                    <option value="gpm_cnc">CNC</option>
-                    <option value="gpm_vehicles">VEHICLE WARFARE</option>
-                    <option value="gpm_coop">COOP</option>
-                </select>
-                <button type="button" id="add-gamemode" class="specialbtn">Adicionar</button>
+        <div id="options">
+
+            <form id="filters-form">
+                <div id="gamemode-selector">
+                    <label for="gamemode">Exibir mapas que NÃO rodaram os modos:</label>
+                    <div id="gamemode-selector-wrapper">
+                        <select id="gamemode">
+                            <option value="gpm_cq">AAS</option>
+                            <option value="gpm_insurgency">INSURGENCY</option>
+                            <option value="gpm_skirmish">SKIRMISH</option>
+                            <option value="gpm_gungame">GUNGAME</option>
+                            <option value="gpm_cnc">CNC</option>
+                            <option value="gpm_vehicles">VEHICLE WARFARE</option>
+                            <option value="gpm_coop">COOP</option>
+                        </select>
+                        <button type="button" id="add-gamemode" class="specialbtn">+</button>
+                    </div>
+                </div>
+
+                <div id="selected-gamemodes">
+                    <!-- Selected gamemodes will appear here as tags -->
+                </div>
+
+                <div>
+                    <label for="days">Nos últimos</label>
+                    <input type="number" id="days" min="0" max="31" value="3"> dias
+                </div>
+                <button type="submit" class="specialbtn" id="filter-btn">Exibir</button>
+            </form>
+
+            <div id="display-options">
+                <p class="grey-text">Dica: Selecione 0 dias para ver todos os mapas que tem aqueles modos.</p>
+                <div id="mode-switch">
+                    <div id="mode-switch-text">
+                        <p>Exibir somente mapas que possuem os modos escolhidos</p>
+                        <p class="grey-text">ex: Deagle5 só aparecerá se GUNGAME for escolhido</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="gamemode-checkbox">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                
+                <div id="order-selector">
+                    <p>Selecione a ordem desejada:</p>
+                    <select id="order-picker">
+                        <option value="alphabetical-asc">Ordem A-Z</option>
+                        <option value="alphabetical-desc">Ordem Z-A</option>
+                        <option value="date-asc">Mais antigos primeiro</option>
+                        <option value="date-desc">Mais recentes primeiro</option>
+                    </select>
+                </div>
+
+                <div id="map-size-selector">
+                    <p>Selecione o tamanho do mapa:</p>
+                    <div id="map-size-buttons">
+                        <button type="button" class="size-btn" data-size="1">1km</button>
+                        <button type="button" class="size-btn" data-size="2">2km</button>
+                        <button type="button" class="size-btn" data-size="4">4km</button>
+                    </div>
+                </div>
+
+
             </div>
 
-            <div class="form-group" id="selected-gamemodes">
-                <!-- Selected gamemodes will appear here as tags -->
-            </div>
-
-            <div class="form-group">
-                <label for="days">Nos últimos</label>
-                <input type="number" id="days" min="0" max="31" value="3"> dias
-            </div>
-
-            <select id="order-picker">
-                <option value="alphabetical-asc">Ordem A-Z</option>
-                <option value="alphabetical-desc">Ordem de Z-A</option>
-                <option value="date-asc">Mais antigos primeiro</option>
-                <option value="date-desc">Mais recentes primeiro</option>
-            </select>
-
-            <button type="submit" class="specialbtn" id="filter-btn">Exibir</button>
-        </form>
+        </div>
 
         
 
         <div id="maps"></div>
     </div>
     <div class="bottom">
-        <p>Feito por <a href="https://github.com/samussd">samussd</a> (Discord: samwka)</p>
+        <p>Feito por <a href="https://github.com/samussd/pr-map-history-viewer">samussd</a> (Discord: samwka)</p>
     </div>
 
     <script type="module" src="script.js"></script>

@@ -1,4 +1,7 @@
-import { map_links, gamemode_name, short_gamemode_name } from './config/constants.js'
+import { map_links, gamemode_name, short_gamemode_name, map_sizes } from './config/constants.js'
+
+//TODO: Botao para exibir somente mapas que possuem os modos escolhidos.
+// ex: Deagle5 só aparecerá se GUNGAME for escolhido.
 
 document.addEventListener("DOMContentLoaded", () => {
     const gamemodeSelect = document.getElementById("gamemode");
@@ -8,9 +11,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterButton = document.getElementById("filter-btn");
     const daysInput = document.getElementById("days");
     const orderPicker = document.getElementById("order-picker");
+    const gamemodeCheckBox = document.getElementById('gamemode-checkbox');
+    const sizeButtons = document.querySelectorAll('.size-btn');
 
-
+    let selectedSizes = [];
     let selectedGamemodes = [];
+    let MAPS_GAMEMODES = null;
 
     const updateSelectedGamemodes = () => {
         selectedGamemodesContainer.innerHTML = ""; // Clear the current tags
@@ -35,6 +41,15 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
+    gamemodeSelect.addEventListener("change", () => {
+        const selectedOption = gamemodeSelect.value;
+    
+        if (!selectedGamemodes.includes(selectedOption)) {
+            selectedGamemodes.push(selectedOption);
+            updateSelectedGamemodes();
+        }
+    });
+
     addGamemodeButton.addEventListener("click", () => {
         const selectedOption = gamemodeSelect.value;
 
@@ -46,6 +61,30 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     
+    sizeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const size = button.dataset.size;
+
+            if (selectedSizes.includes(size)) {
+                button.classList.remove('selected-size')
+                selectedSizes = selectedSizes.filter(item => item !== size);
+            } else {
+                button.classList.add('selected-size')
+                selectedSizes.push(size);
+            }
+
+            renderMaps(MAPS_GAMEMODES); // Re-render maps after size filter update
+        });
+    });
+
+
+    gamemodeCheckBox.addEventListener('change', function () {
+        renderMaps(MAPS_GAMEMODES);
+    });
+
+    orderPicker.addEventListener('change', function() {
+        renderMaps(MAPS_GAMEMODES);
+    });
     
     filtersForm.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -63,14 +102,51 @@ document.addEventListener("DOMContentLoaded", () => {
     // Fetch maps function as before
     const fetchMaps = async (gamemodes, days) => {
         try {
-            const maps_gamemodes = await getAvailableMapsAndGamemodes(gamemodes, days);
-            console.log(maps_gamemodes);
-            renderMaps(maps_gamemodes);
+            MAPS_GAMEMODES = await getAvailableMapsAndGamemodes(gamemodes, days);
+            console.log(MAPS_GAMEMODES);
+            renderMaps(MAPS_GAMEMODES);
         } catch (error) {
             console.error("Error fetching maps:", error);
             mapsContainer.innerHTML = `<p style="color: red;">Failed to load maps.</p>`;
         }
     };
+
+    function filterMapsWithSize(map_names, selectedSizes) {
+        let filtered_maps = [];
+    
+        for (const mapName of map_names) {
+            let mapSize = map_sizes[mapName];
+    
+            if (
+                selectedSizes.includes(mapSize) ||
+                (mapSize === "0" && selectedSizes.includes("1")) ||
+                (mapSize === "8" && selectedSizes.includes("4"))
+            ) {
+                filtered_maps.push(mapName);
+            }
+        }
+    
+        return filtered_maps;
+    }
+
+
+    function onlyMapsWithGamemodes(map_names, maps_gamemodes, gamemodes) {
+        let maps_with_gamemodes = [];
+
+        for (const mapName of map_names) {
+            const mapData = maps_gamemodes[mapName]
+            if (!mapData) continue;
+
+            for (const entry of mapData) {
+                if (gamemodes.includes(entry.layout)) {
+                    maps_with_gamemodes.push(mapName);
+                    break;
+                }
+            }
+        }
+
+        return maps_with_gamemodes;
+    }
 
     function sortAlphabetical(maps_gamemode, order = "ascending") {
         let ordered_name_list = Object.keys(maps_gamemode);
@@ -144,6 +220,14 @@ document.addEventListener("DOMContentLoaded", () => {
             ordered_map_names = sortByDate(maps_gamemodes, selectedGamemodes, order);
         }
 
+        if (selectedSizes.length > 0) {
+            ordered_map_names = filterMapsWithSize(ordered_map_names, selectedSizes);
+        }
+
+        if (gamemodeCheckBox.checked) {
+            ordered_map_names = onlyMapsWithGamemodes(ordered_map_names, maps_gamemodes, selectedGamemodes);
+        }
+
         ordered_map_names.forEach((mapName) => {
             if (maps_gamemodes.hasOwnProperty(mapName)) {
                 const mapData = maps_gamemodes[mapName];
@@ -166,8 +250,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 titleOverlay.classList.add("title-overlay");
                 titleOverlay.classList.add("map-title")
                 const mapNameElement = document.createElement("p");
-                mapNameElement.innerHTML = mapName.replace(/2$/, '').replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());;
+                mapNameElement.innerHTML = `${mapName.replace(/2$/, '').replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())}`;
+                const mapSizeElement = document.createElement("p");
+                mapSizeElement.classList.add('small-title-text')
+                mapSizeElement.innerHTML = `${map_sizes[mapName]} km`
                 titleOverlay.appendChild(mapNameElement);
+                titleOverlay.appendChild(mapSizeElement);
 
                 let latestDateInfo = "Última vez que rodou os modos";
                 let latestDates = [];
@@ -211,10 +299,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     // Display the most recent gamemode
                     latestGamemodeElement.innerHTML = `Rodou ${short_gamemode_name[latestDateFromGamemodes.mode]} há ${daysSinceLast} dias.`;
+                    latestGamemodeElement.classList.add('small-title-text');
                     titleOverlay.appendChild(latestGamemodeElement);
                 } else {
                     // Handle case where no valid dates are found
                     const noDataElement = document.createElement("p");
+                    noDataElement.classList.add('small-title-text');
                     noDataElement.innerHTML = "Não rodou os modos recentemente.";
                     titleOverlay.appendChild(noDataElement);
                 }

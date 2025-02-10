@@ -1,5 +1,5 @@
 // controllers/mapController.js
-import { MapLog } from '../models/mapModel.js';
+import { MapLog } from '../models/mapLogModel.js';
 import { Sequelize } from 'sequelize';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
@@ -56,30 +56,56 @@ export const removeMapLog = async (req, res) => {
 
 export const updateMapLogDate = async (mapName, gameMode, gameLayout, mapDate) => {
     try {
-        // Find the map log entry based on mapName, gameMode, and gameLayout
+        // Define allowed layouts
+        const validLayouts = ["Inf", "Std", "Alt", "Lrg"];
+
+        // Check if the provided layout is valid
+        if (!validLayouts.includes(gameLayout)) {
+            console.error(`❌ Invalid layout: ${gameLayout}. Allowed values: ${validLayouts.join(", ")}`);
+            return null;
+        }
+
+        // Find a map log entry that matches mapName and gameMode
         const existingMapLog = await MapLog.findOne({
             where: {
-                map_name: mapName,  // Match the column name in the model
-                game_type: gameMode,  // Match the column name in the model
-                layout: gameLayout  // Match the column name in the model
+                map_name: mapName,
+                game_type: gameMode
             }
         });
 
         if (!existingMapLog) {
-            console.error('❌ Map log entry not found');
+            console.error('❌ No matching map log entry found for map_name and game_type');
             return null;
         }
 
-        // Update the most_recent_date column
-        existingMapLog.most_recent_date = mapDate;
+        // Check if an entry with the same layout already exists
+        const layoutExists = await MapLog.findOne({
+            where: {
+                map_name: mapName,
+                game_type: gameMode,
+                layout: gameLayout
+            }
+        });
 
-        // Save the updated map log
-        await existingMapLog.save();
-        console.log(`📝 Map log date updated: ${mapName} - ${gameMode} - ${gameLayout} at ${mapDate}`);
-
-        return existingMapLog;
+        if (layoutExists) {
+            // If the layout already exists, update the most_recent_date
+            layoutExists.most_recent_date = mapDate;
+            await layoutExists.save();
+            console.log(`📝 Map log date updated: ${mapName} - ${gameMode} - ${gameLayout} at ${mapDate}`);
+            return layoutExists;
+        } else {
+            // If no entry with the same layout exists, create a new one
+            const newMapLog = await MapLog.create({
+                map_name: mapName,
+                game_type: gameMode,
+                layout: gameLayout,
+                most_recent_date: mapDate
+            });
+            console.log(`📝 New map log created: ${mapName} - ${gameMode} - ${gameLayout} at ${mapDate}`);
+            return newMapLog;
+        }
     } catch (error) {
-        console.error('❌ Error updating map log date:', error);
+        console.error('❌ Error updating or creating map log:', error);
     }
 };
 

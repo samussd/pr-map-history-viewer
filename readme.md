@@ -1,4 +1,4 @@
-# Map Picker
+# Map History Viewer
 Ver e filtrar o histórico de mapas de um servidor de Project Reality.
 
 ## Requisitos
