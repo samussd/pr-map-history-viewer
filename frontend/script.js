@@ -161,48 +161,41 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function sortByDate(maps_gamemodes, gamemodes, order = "ascending") {
         let ordered_name_list = [];
-        
+    
         for (const mapName in maps_gamemodes) {
             const mapData = maps_gamemodes[mapName];
             let mostRecent = null;
-            
+    
             for (const entry of mapData) {
                 if (!gamemodes.includes(entry.layout)) continue;
     
                 if (entry.date !== null) {
                     const entryDate = new Date(entry.date);
-                    if (!mostRecent || entryDate < mostRecent) {
+                    if (!mostRecent || entryDate > mostRecent) { // ✅ Find most recent date
                         mostRecent = entryDate;
                     }
                 }
             }
-            
+    
             ordered_name_list.push({ map_name: mapName, recentDate: mostRecent });
         }
     
         ordered_name_list.sort((a, b) => {
-            // If both dates are null, keep them as is
             if (a.recentDate === null && b.recentDate === null) return 0;
     
-            // If only one date is null, treat it as the oldest based on the order
+            // ✅ Null values should be first in ascending order (treated as the oldest)
             if (a.recentDate === null) return order === "ascending" ? -1 : 1;
             if (b.recentDate === null) return order === "ascending" ? 1 : -1;
     
-            // Compare dates if both are not null
             const dateComparison = a.recentDate - b.recentDate;
     
-            // If descending order, reverse the comparison
-            if (order === "descending") {
-                return -dateComparison;
-            }
-    
-            return dateComparison;  // Default is ascending
+            return order === "descending" ? -dateComparison : dateComparison;
         });
     
-        ordered_name_list = ordered_name_list.map((entry) => entry.map_name);
-        
-        return ordered_name_list;
+        return ordered_name_list.map((entry) => entry.map_name);
     }
+    
+    
 
     const renderMaps = (maps_gamemodes) => {
         const mapsContainer = document.getElementById("maps");
@@ -219,6 +212,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const order = sortOption === "date-desc" ? "descending" : "ascending";
             ordered_map_names = sortByDate(maps_gamemodes, selectedGamemodes, order);
         }
+
+        console.log(ordered_map_names)
 
         if (selectedSizes.length > 0) {
             ordered_map_names = filterMapsWithSize(ordered_map_names, selectedSizes);
@@ -336,7 +331,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const mapLink = `https://mapgallery.realitymod.com/${map_links[mapName]}`; // Get the map's link from map_links
                 if (mapLink) {
                     mapButton.addEventListener("click", () => {
-                        window.location.href = mapLink; // Redirect to the map's site
+                        window.open(mapLink, '_blank'); // Redirect to the map's site
                     });
                 }
 
@@ -423,5 +418,6 @@ document.addEventListener("DOMContentLoaded", () => {
     gamemodeSelect.value = 'gpm_insurgency'
     addGamemodeButton.click();
     filterButton.click();
+    gamemodeCheckBox.click();
     
 });
