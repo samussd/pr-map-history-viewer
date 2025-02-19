@@ -387,10 +387,11 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     async function getAvailableMapsAndGamemodes(gamemodes, days) {
+        const SERVER_IP = "162.120.71.123";
         let maps_gamemodes = {}; // {'gaza_2': [{layout: gpm_cq, date:...}]}
 
         try {
-            const response = await fetch(`http://localhost:5000/api/filtered-maps?gameModes=${gamemodes.join(",")}&days=${days}`);
+            const response = await fetch(`http://${SERVER_IP}:5000/api/filtered-maps?gameModes=${gamemodes.join(",")}&days=${days}`);
             if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
             const data = await response.json();
